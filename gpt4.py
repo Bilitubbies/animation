@@ -1,5 +1,5 @@
 """
-`python gpt4.py` to render a video
+run `python gpt4.py` to render a video
 """
 import copy
 import math
@@ -291,9 +291,11 @@ with tempconfig(
         "pixel_height": PIXEL_HEIGHT,
         "pixel_width": PIXEL_WIDTH,
         "frame_rate": FRAME_RATE,
+        "format": "mp4",
         "output_file": f"{GPT4.__name__.lower()}_{PIXEL_WIDTH}x{PIXEL_HEIGHT}_{int(FRAME_RATE)}fps_{datetime.now().strftime('%Y%m%d%H%M%S')}",
         # "output_file": f"{Test.__name__.lower()}_{PIXEL_WIDTH}x{PIXEL_HEIGHT}_{int(FRAME_RATE)}fps",
     }
 ):
     scene = GPT4()
+    # scene = Test()
     scene.render()
