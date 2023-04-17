@@ -22,10 +22,6 @@ class Recto(RoundedRectangle):
             color=random.choice(RECTO_COLOR_LIST),
             fill_opacity=1.0,
             stroke_width=0,
-            sheen_factor=random.uniform(*SHEEN_FACTOR_RANGE),
-            sheen_direction=np.array(
-                (random.uniform(-1.0, 1.0), random.uniform(-1.0, 1.0), 0.0)
-            ),
             **kwargs,
         )
 
@@ -56,19 +52,25 @@ class RectoChain(VGroup):
                 f"Randomly generated RectoChain has the smaller width ({self.effective_width}) than the frame width ({FRAME_WIDTH})"
             )
         super().__init__(
-            *recto_list, *copy.deepcopy(recto_list[: RECTO_NUMBER_RANGE[0]]), **kwargs
+            *recto_list,
+            *copy.deepcopy(recto_list[: RECTO_NUMBER_RANGE[0]]),
+            **kwargs,
         )
         self.arrange(buff=recto_span)
 
 
 class GPT4(Scene):
     def construct(self):
+        # region Configs
         config.frame_x_radius = FRAME_X_RADIUS
         config.frame_y_radius = FRAME_Y_RADIUS
 
         self.camera.background_color = BACKGROUNG_COLOR
         self.camera.frame_height = FRAME_HEIGHT
         self.camera.frame_width = FRAME_WIDTH
+        # endregion
+
+        # region Add NumberPlane
         # self.add(
         #     NumberPlane(
         #         x_range=(
@@ -83,8 +85,31 @@ class GPT4(Scene):
         #         ),
         #     )
         # )
+        # endregion
 
+        # region Generate RectoChain list
         rc_list = [RectoChain() for _ in range(RECTOCHAIN_NUMBER)]
+        # endregion
+
+        # region Randomly picked a recto then change its color to WHITE
+        random_selected_rectochain: RectoChain = rc_list[
+            random.randint(0, len(rc_list) - 1)
+        ]
+        random_selected_recto = random_selected_rectochain.submobjects[
+            random.randint(0, len(random_selected_rectochain.submobjects) - 1)
+        ]
+        if type(random_selected_recto) is Recto:
+            random_selected_recto.set_color(
+                (
+                    random_bright_color(),
+                    random_bright_color(),
+                    random_bright_color(),
+                    random_bright_color(),
+                )
+            ).set_sheen_direction(RIGHT)
+        # endregion
+
+        # region Initializing all RectoChain's position
         rc_list[0].to_corner(buff=0.0)
         # self.add(rc_list[0])
         for i in range(1, RECTOCHAIN_NUMBER):
@@ -92,7 +117,9 @@ class GPT4(Scene):
                 rc_list[i - 1], direction=UP, buff=RECTOCHAIN_SPAN
             ).to_edge(edge=RIGHT if i % 2 == 1 else LEFT, buff=0.0)
             # self.add(rc_list[i])
+        # endregion
 
+        # region Initializing all RectoChain's animation
         animation_list = []
         for i in range(RECTOCHAIN_NUMBER):
             rc = rc_list[i]
@@ -124,34 +151,9 @@ class GPT4(Scene):
                     run_time=RUN_TIME,
                 )
             )
+        # endregion
 
         self.play(AnimationGroup(*animation_list))
-
-        # rc_list = [RectoChain() for _ in range(RECTOCHAIN_NUMBER)]
-        # rc_list[0].to_corner(buff=0.0)
-        # # self.add(rc_list[0])
-        # for i in range(1, RECTOCHAIN_NUMBER):
-        #     rc_list[i].next_to(
-        #         rc_list[i - 1], direction=UP, buff=RECTOCHAIN_SPAN
-        #     ).to_edge(edge=RIGHT if i % 2 == 1 else LEFT, buff=0.0)
-        #     # self.add(rc_list[i])
-        # animations = []
-        # for i in range(RECTOCHAIN_NUMBER):
-        #     rc = rc_list[i]
-        #     animations.append(
-        #         # rc.animate, ApplyMethod, either would be fine
-        #         # rc.animate(
-        #         #     run_time=RUN_TIME,
-        #         #     rate_func=rate_functions.linear,
-        #         # ).shift((LEFT if i % 2 == 0 else RIGHT) * rc.effective_width)
-        #         ApplyMethod(
-        #             rc.shift,
-        #             (LEFT if i % 2 == 0 else RIGHT) * rc.effective_width,
-        #             run_time=RUN_TIME,
-        #             rate_func=rate_functions.linear,
-        #         )
-        #     )
-        # self.play(AnimationGroup(*animations))
 
     @classmethod
     def get_segment_list(cls, rc: RectoChain) -> list[float]:
@@ -179,14 +181,17 @@ class GPT4(Scene):
                 interpolation_list.append(new_interpolation)
 
         interpolation_list.sort()
-        segment_list: list[float] = [
-            interpolation_list[i]
-            if i == 0
-            else interpolation_list[i] - interpolation_list[i - 1]
-            for i in range(len(interpolation_list))
-        ]
-        segment_list.append(rc.effective_width - interpolation_list[-1])
-        return segment_list
+        if interpolation_list:
+            segment_list: list[float] = [
+                interpolation_list[i]
+                if i == 0
+                else interpolation_list[i] - interpolation_list[i - 1]
+                for i in range(len(interpolation_list))
+            ]
+            segment_list.append(rc.effective_width - interpolation_list[-1])
+            return segment_list
+        else:
+            return [rc.effective_width]
 
 
 class SmoothShift(Animation):
@@ -225,12 +230,16 @@ class SmoothShift(Animation):
 
 class Test(Scene):
     def construct(self):
+        # region Configs
         config.frame_x_radius = FRAME_X_RADIUS
         config.frame_y_radius = FRAME_Y_RADIUS
 
         self.camera.background_color = BACKGROUNG_COLOR
         self.camera.frame_height = FRAME_HEIGHT
         self.camera.frame_width = FRAME_WIDTH
+        # endregion
+
+        # region NumberPlane
         # self.add(
         #     NumberPlane(
         #         x_range=(
@@ -245,44 +254,31 @@ class Test(Scene):
         #         ),
         #     )
         # )
+        # endregion
 
-        rectochain_number = 8
-        rc_list = [RectoChain() for _ in range(rectochain_number)]
-        rc_list[0].to_corner(buff=0.0)
-        for i in range(1, rectochain_number):
-            rc_list[i].next_to(
-                rc_list[i - 1], direction=UP, buff=RECTOCHAIN_SPAN
-            ).to_edge(edge=RIGHT if i % 2 == 1 else LEFT, buff=0.0)
-        animation_list = []
-        for i in range(rectochain_number):
-            rc = rc_list[i]
-            direction_vector = LEFT if i % 2 == 0 else RIGHT
-            segment_list = GPT4.get_segment_list(rc)
-            velocity_list = [
-                random.uniform(0.25, 4.0) for _ in range(len(segment_list) - 1)
-            ]
-            animation_list.append(
-                Succession(
-                    *(
-                        SmoothShift(
-                            rc
-                            if index == 0
-                            else rc.shift(direction_vector * segment_list[index - 1]),
-                            direction_vector * value,
-                            start_velocity=1.0
-                            if index == 0
-                            else velocity_list[index - 1],
-                            end_velocity=1.0
-                            if index == len(segment_list) - 1
-                            else velocity_list[index],
-                        )
-                        for index, value in enumerate(segment_list)
-                    ),
-                    run_time=RUN_TIME,
-                )
+        # self.add(
+        #     VGroup(*(Rectangle(fill_opacity=1.0) for _ in range(10)))
+        #     .arrange(buff=4)
+        #     .set_color_by_gradient(
+        #         *(
+        #             rgb_to_color(hex_to_rgb("#C6FFDD")),
+        #             rgb_to_color(hex_to_rgb("#FBD786")),
+        #             rgb_to_color(hex_to_rgb("#f7797d")),
+        #         )
+        #     ),
+        # )
+
+        tmp = Rectangle(height=20, width=40, fill_opacity=1.0)
+        tmp.set_color(
+            (
+                rgb_to_color(hex_to_rgb("#C6FFDD")),
+                rgb_to_color(hex_to_rgb("#FBD786")),
+                rgb_to_color(hex_to_rgb("#f7797d")),
             )
+        ).set_sheen_direction(RIGHT)
 
-        self.play(AnimationGroup(*animation_list))
+        self.add(tmp)
+        pass
 
 
 with tempconfig(

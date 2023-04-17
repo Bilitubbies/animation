@@ -10,8 +10,6 @@ RECTO_HEIGHT: float = 1.0  # rather not to modify this
 RECTO_WIDTH_MULTIPLIER_RANGE: tuple = (4.0, 32.0)
 RECTO_CURVATURE: float = 1.0  # extreme rendering time impact
 RECTO_CURVATURE_RANGE: tuple = (0.0, 1.0)  # do not modify this
-SHEEN_FACTOR_RANGE: tuple = (0.1, 0.14)
-# SHEEN_FACTOR_RANGE: tuple = (0.0, 0.0)
 
 # RectoChain
 RECTO_NUMBER_RANGE: tuple = (
@@ -35,10 +33,10 @@ FRAME_Y_RADIUS: float = FRAME_HEIGHT / 2
 # Animation
 RUN_TIME: float = 30.0  # medium rendering time impact, in seconds
 INTERPOLATION_REFERENCE: float = 128.0
-MIN_SHIFT_DISTANCE: float = 64.0
+MIN_SHIFT_DISTANCE: float = 96.0
 MIN_SHIFT_DISTANCE = (
-    INTERPOLATION_REFERENCE / 2
-    if MIN_SHIFT_DISTANCE > INTERPOLATION_REFERENCE / 2
+    INTERPOLATION_REFERENCE
+    if MIN_SHIFT_DISTANCE > INTERPOLATION_REFERENCE
     else MIN_SHIFT_DISTANCE
 )
 BASE_VELOCITY: float = 1.0  # do not modify this
